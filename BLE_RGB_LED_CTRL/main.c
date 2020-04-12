@@ -77,6 +77,8 @@
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
 #include "nrf_pwr_mgmt.h"
+#include "boards.h"
+#include "nrf_gpio.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -84,6 +86,11 @@
 
 #include "ble_cus.h"
 
+
+#define LED1_G         NRF_GPIO_PIN_MAP(0,6)
+#define LED2_R         NRF_GPIO_PIN_MAP(0,8)
+#define LED2_G         NRF_GPIO_PIN_MAP(1,9)
+#define LED2_B         NRF_GPIO_PIN_MAP(0,12)
 
 #define DEVICE_NAME                     "Nordic_Template"                       /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "NordicSemiconductor"                   /**< Manufacturer. Will be passed to Device Information Service. */
@@ -112,6 +119,7 @@
 #define SEC_PARAM_MAX_KEY_SIZE          16                                      /**< Maximum encryption key size. */
 
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
+
 
 BLE_CUS_DEF(m_cus);
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
@@ -293,6 +301,9 @@ static void services_init(void)
 
 	// Initialize CUS Service init structure to zero.
     memset(&cus_init, 0, sizeof(cus_init));
+	
+	BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
+	BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
 	
     err_code = ble_cus_init(&m_cus, &cus_init);
     APP_ERROR_CHECK(err_code);
@@ -649,7 +660,7 @@ static void buttons_leds_init(bool * p_erase_bonds)
 
     err_code = bsp_init(BSP_INIT_LEDS | BSP_INIT_BUTTONS, bsp_event_handler);
     APP_ERROR_CHECK(err_code);
-
+	
     err_code = bsp_btn_ble_init(NULL, &startup_event);
     APP_ERROR_CHECK(err_code);
 
@@ -733,8 +744,10 @@ int main(void)
     application_timers_start();
 
     advertising_start(erase_bonds);
-
+	
+	bsp_board_led_on(1);
     // Enter main loop.
+	        
     for (;;)
     {
         idle_state_handle();

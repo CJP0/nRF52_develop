@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include "ble.h"
 #include "ble_srv_common.h"
+#include "boards.h"
+#include "nrf_gpio.h"
 
 #define CUSTOM_SERVICE_UUID_BASE         {0xBC, 0x8A, 0xBF, 0x45, 0xCA, 0x05, 0x50, 0xBA, \
                                           0x40, 0x42, 0xB0, 0x00, 0xC9, 0xAD, 0x64, 0xF3}
@@ -16,7 +18,9 @@
  */
 #define BLE_CUS_DEF(_name)                                                                          \
 static ble_cus_t _name;                                                                             \
-
+NRF_SDH_BLE_OBSERVER(_name ## _obs,                                                                 \
+                     BLE_HRS_BLE_OBSERVER_PRIO,                                                     \
+                     ble_cus_on_ble_evt, &_name)
 
 /**@brief Custom Service init structure. This contains all options and data needed for
  *        initialization of the service.*/
@@ -51,4 +55,13 @@ typedef struct ble_cus_s ble_cus_t;
  */
 uint32_t ble_cus_init(ble_cus_t * p_cus, const ble_cus_init_t * p_cus_init);
 
-
+/**@brief Function for handling the Application's BLE Stack events.
+ *
+ * @details Handles all events from the BLE stack of interest to the Battery Service.
+ *
+ * @note 
+ *
+ * @param[in]   p_ble_evt  Event received from the BLE stack.
+ * @param[in]   p_context  Custom Service structure.
+ */
+void ble_cus_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context);
